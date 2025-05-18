@@ -50,6 +50,14 @@ def predict_performance(model, user_input_df, training_columns):
     return prediction
 
 # --- Session State Initialization ---
+
+st.markdown("""
+            <style>
+            p{font-size: 36px !important;}
+            }
+            </style>
+        """, unsafe_allow_html=True)
+
 if "human_check_number" not in st.session_state:
     st.session_state.human_check_number = random.randint(1, 100)
 if "human_verified" not in st.session_state:
@@ -107,7 +115,7 @@ if st.session_state.step < len(steps):
             if st.button("➡️ Next"):
                 st.session_state.step += 1
         elif st.session_state.step == len(steps) - 1:
-            if st.button("✅ Confirm Last Input"):
+            if st.button("✅ Confirm"):
                 st.session_state.confirmed_last_input = True
 
 # --- Final Prediction ---
