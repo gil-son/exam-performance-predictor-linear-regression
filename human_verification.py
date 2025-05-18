@@ -5,7 +5,7 @@ import os
 from datetime import datetime, timedelta
 
 CLOCK_EMOJIS = {
-    "⌛": 0,
+    "⌛": "sand",
     "🕐": 1,
     "🕑": 2,
     "🕒": 3,
