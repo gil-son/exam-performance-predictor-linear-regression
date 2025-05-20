@@ -18,7 +18,7 @@ CLOCK_EMOJIS = {
     "🕚": 11,
     "🕛" :12
 }
-BLOCK_DURATION_MINUTES = 1
+BLOCK_DURATION_MINUTES = 5
 MAX_ATTEMPTS = 3
 BLOCK_FILE = "block_until.txt"
 
@@ -70,9 +70,8 @@ def run_human_verification():
         st.markdown("""
             <style>
                     
-            .clock-button-container button {
-                height: 80px !important;
-                width: 100% !important;
+            p {
+                font-size: 32px !important;
             }
             </style>
         """, unsafe_allow_html=True)
