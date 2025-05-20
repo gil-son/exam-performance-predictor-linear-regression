@@ -1,13 +1,18 @@
 import pandas as pd
 import random
 import streamlit as st
-import joblib  # For saving and loading models
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LinearRegression
-from sklearn.preprocessing import LabelEncoder
-from sklearn.metrics import r2_score, mean_squared_error
+import joblib
 import matplotlib.pyplot as plt
+from datetime import datetime, timedelta
+import os
+import numpy as np
+from sklearn.preprocessing import LabelEncoder
+
 from human_verification import run_human_verification
+
+# --- Constants ---
+PREDICTION_BLOCK_FILE = "prediction_block_until.txt"
+PREDICTION_COOLDOWN_MINUTES = 10
 
 # --- Load the pre-trained model ---
 try:
@@ -17,7 +22,7 @@ except FileNotFoundError:
     st.error("❌ Pre-trained model file not found. Please train and save the model first.")
     loaded_model = None
 
-# --- Load and Preprocess Training Data (for preprocessing new input) ---
+# --- Load and preprocess training data ---
 df = pd.read_csv("preparation_before_the_exam.csv")
 df["Did Practical Exercises"] = df["Practical Exercises"].map({"Yes": 1, "No": 0})
 
@@ -33,13 +38,6 @@ def preprocess(df):
     df = df.drop(columns=["Practical Exercises"], errors="ignore")
     return df
 
-def prepare_features(df):
-    if len(df) < 2:
-        raise ValueError(f"Not enough data to split. Only {len(df)} sample(s) available.")
-    X = df.drop(columns=["Performance (%)"])
-    y = df["Performance (%)"]
-    return train_test_split(X, y, test_size=0.2, random_state=42)
-
 def predict_performance(model, user_input_df, training_columns):
     user_input_processed = preprocess(user_input_df)
     missing_cols = set(training_columns) - set(user_input_processed.columns)
@@ -49,100 +47,127 @@ def predict_performance(model, user_input_df, training_columns):
     prediction = model.predict(user_input_processed)[0]
     return prediction
 
-# --- Session State Initialization ---
+# --- Prediction Block Helpers ---
+def _load_prediction_block_until():
+    if os.path.exists(PREDICTION_BLOCK_FILE):
+        ts = open(PREDICTION_BLOCK_FILE).read().strip()
+        return datetime.fromisoformat(ts)
+    return None
 
+def _save_prediction_block_until(dt: datetime):
+    with open(PREDICTION_BLOCK_FILE, "w") as f:
+        f.write(dt.isoformat())
+
+# --- Style tweaks ---
 st.markdown("""
-            <style>
-            p{font-size: 36px !important;}
-            }
-            </style>
-        """, unsafe_allow_html=True)
-
-if "human_check_number" not in st.session_state:
-    st.session_state.human_check_number = random.randint(1, 100)
-if "human_verified" not in st.session_state:
-    st.session_state.human_verified = False
-if "button_clicked" not in st.session_state:
-    st.session_state.button_clicked = False
-if "step" not in st.session_state:
-    st.session_state.step = 0
-if "inputs" not in st.session_state:
-    st.session_state.inputs = {}
-if "confirmed_last_input" not in st.session_state:
-    st.session_state.confirmed_last_input = False
+    <style>
+        p, label, div[data-baseweb="select"] div { font-size: 24px !important; }
+    </style>
+""", unsafe_allow_html=True)
 
 # --- Human Verification ---
-run_human_verification()
+if "human_verified" not in st.session_state:
+    st.session_state.human_verified = False
 
-# --- Main App Content ---
+if not st.session_state.human_verified:
+    run_human_verification()
+    st.stop()
+
 st.success("🎉 You're verified as human!")
-st.write("You can now access the rest of the app.")
 
-# ------------------ 🎯 Main UI ------------------
+# --- Prediction Cooldown Check ---
+now = datetime.now()
+block_until = _load_prediction_block_until()
+
+if block_until and now < block_until:
+    remaining = int((block_until - now).total_seconds())
+    st.warning(f"⏳ You’ve recently predicted. Please wait **{remaining} seconds** before trying again.")
+    st.stop()
+
+# --- Main App ---
 st.title("🎯 Predict the Performance Before the Exam")
 st.divider()
 
-# --- Input Steps ---
-steps = [
-    ("Age", lambda: st.number_input("👤 Type your age", min_value=0, value=st.session_state.inputs.get("Age", 18), key="Age")),
-    ("Study Time (h/day)", lambda: st.slider("📚 Study Time (hours/day)", 0, 12, value=st.session_state.inputs.get("Study Time (h/day)", 4), key="Study Time (h/day)")),
-    ("Average sleep duration in hours", lambda: st.slider("😴 Sleep Duration (hours)", 0, 12, value=st.session_state.inputs.get("Average sleep duration in hours", 7), key="Average sleep duration in hours")),
-    ("Practice Tests per Week", lambda: st.slider("📝 Practice Tests per Week", 0, 10, value=st.session_state.inputs.get("Practice Tests per Week", 4), key="Practice Tests per Week")),
-    ("Average of latest practical exercises", lambda: st.slider("📈 Avg Practical Exercises (%)", 0, 100, value=st.session_state.inputs.get("Average of latest practical exercises", 70), key="Average of latest practical exercises")),
-    ("Food Quality", lambda: st.selectbox("🍽️ Food Quality", ["Bad", "Media", "Good", "Great"], index=["Bad", "Media", "Good", "Great"].index(st.session_state.inputs.get("Food Quality", "Good")), key="Food Quality")),
-    ("Practical Exercises", lambda: st.radio("🧪 Did Practical Exercises?", ["Yes", "No"], index=["Yes", "No"].index(st.session_state.inputs.get("Practical Exercises", "No")), key="Practical Exercises")),
-    ("Theoretical Exercises", lambda: st.radio("📖 Did Theoretical Exercises?", ["Yes", "No"], index=["Yes", "No"].index(st.session_state.inputs.get("Theoretical Exercises", "Yes")), key="Theoretical Exercises")),
-    ("Spaced Study", lambda: st.radio("🧠 Used Spaced Study?", ["Yes", "No"], index=["Yes", "No"].index(st.session_state.get("Spaced Study", "Yes")), key="Spaced Study")),
-    ("Motivation", lambda: st.selectbox("🔥 Motivation Level", ["Low", "Media", "High"], index=["Low", "Media", "High"].index(st.session_state.get("Motivation", "High")), key="Motivation")),
-    ("Use of Study Techniques", lambda: st.radio("🧪 Used Study Techniques?", ["Yes", "No"], index=["Yes", "No"].index(st.session_state.get("Use of Study Techniques", "Yes")), key="Use of Study Techniques")),
-    ("Use of Distractions", lambda: st.radio("📱 Used Distractions?", ["Yes", "No"], index=["Yes", "No"].index(st.session_state.get("Use of Distractions", "Yes")), key="Use of Distractions")),
-    ("Anxiety before the test", lambda: st.selectbox("💢 Anxiety Before the Test", ["Low", "Media", "High"], index=["Low", "Media", "High"].index(st.session_state.get("Anxiety before the test", "Low")), key="Anxiety before the test")),
-]
+with st.form("input_form"):
+    age = st.number_input("👤 Age", min_value=0, value=18)
+    study_time = st.slider("📚 Study Time (hours/day)", 0, 12, 4)
+    sleep = st.slider("😴 Sleep Duration (hours)", 0, 12, 7)
+    tests_per_week = st.slider("📝 Practice Tests per Week", 0, 10, 4)
+    avg_exercises = st.slider("📈 Avg Practical Exercises (%)", 0, 100, 70)
+    food_quality = st.selectbox("🍽️ Food Quality", ["Bad", "Media", "Good", "Great"])
+    did_practical = st.radio("🧪 Did Practical Exercises?", ["Yes", "No"])
+    did_theoretical = st.radio("📖 Did Theoretical Exercises?", ["Yes", "No"])
+    spaced_study = st.radio("🧠 Used Spaced Study?", ["Yes", "No"])
+    motivation = st.selectbox("🔥 Motivation Level", ["Low", "Media", "High"])
+    used_techniques = st.radio("🧪 Used Study Techniques?", ["Yes", "No"])
+    used_distractions = st.radio("📱 Used Distractions?", ["Yes", "No"])
+    anxiety = st.selectbox("💢 Anxiety Before the Test", ["Low", "Media", "High"])
+    
+    submitted = st.form_submit_button("🚀 Predict Performance")
 
-# --- Navigation and Input Display ---
-if st.session_state.step < len(steps):
-    current_step_label, current_input = steps[st.session_state.step]
-    st.subheader(f"Step {st.session_state.step + 1}: {current_step_label}")
-    st.session_state.inputs[current_step_label] = current_input()
+if submitted and loaded_model:
+    new_student = {
+        "Age": age,
+        "Study Time (h/day)": study_time,
+        "Average sleep duration in hours": sleep,
+        "Practice Tests per Week": tests_per_week,
+        "Average of latest practical exercises": avg_exercises,
+        "Food Quality": food_quality,
+        "Practical Exercises": did_practical,
+        "Theoretical Exercises": did_theoretical,
+        "Spaced Study": spaced_study,
+        "Motivation": motivation,
+        "Use of Study Techniques": used_techniques,
+        "Use of Distractions": used_distractions,
+        "Anxiety before the test": anxiety
+    }
+    
+    new_df = pd.DataFrame([new_student])
+    new_df["Did Practical Exercises"] = new_df["Practical Exercises"].map({"Yes": 1, "No": 0})
+    processed_new_df = preprocess(new_df)
+    training_columns = [col for col in df.columns if col != "Performance (%)" and col != "Practical Exercises"]
 
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.session_state.step > 0 and st.button("⬅️ Previous"):
-            st.session_state.step -= 1
-            st.session_state.confirmed_last_input = False
-    with col2:
-        if st.session_state.step < len(steps) - 1:
-            if st.button("➡️ Next"):
-                st.session_state.step += 1
-        elif st.session_state.step == len(steps) - 1:
-            if st.button("✅ Confirm"):
-                st.session_state.confirmed_last_input = True
+    try:
+        prediction = predict_performance(loaded_model, processed_new_df, training_columns)
+        st.success(f"🎯 Predicted Performance: `{prediction:.2f}%`")
 
-# --- Final Prediction ---
-if st.session_state.step == len(steps) - 1 and st.session_state.confirmed_last_input:
-    st.markdown("---")
-    st.success("✅ All inputs completed!")
+        # Save cooldown time
+        next_allowed = datetime.now() + timedelta(minutes=PREDICTION_COOLDOWN_MINUTES)
+        _save_prediction_block_until(next_allowed)
 
-    if st.button("🚀 Predict Performance"):
-        if loaded_model:
-            new_student = {key: st.session_state.inputs[key] for key, _ in steps}
-            new_df = pd.DataFrame([new_student])
+        # --- Donut Chart ---
+        fig1, ax1 = plt.subplots()
+        wedges, texts = ax1.pie(
+            [prediction, 100 - prediction],
+            labels=['Your Score', 'Remaining'],
+            colors=['#00c49a', '#e0e0e0'],
+            startangle=90,
+            counterclock=False,
+            wedgeprops={'width': 0.3}
+        )
+        ax1.set(aspect="equal")
+        ax1.text(0, 0, f"{prediction:.1f}%", ha='center', va='center', fontsize=24, fontweight='bold', color='#00c49a')
+        st.markdown("### 🟢 Performance Overview")
+        st.pyplot(fig1)
 
-            # Check if 'Practical Exercises' was part of the user inputs
-            if "Practical Exercises" in new_df.columns:
-                new_df["Did Practical Exercises"] = new_df["Practical Exercises"].map({"Yes": 1, "No": 0})
-            else:
-                new_df["Did Practical Exercises"] = 0
-                st.warning("⚠️ 'Practical Exercises' information not provided. Assuming 'No'.")
+        # --- Simulated Weekly Performance ---
+        weeks_count = max(1, tests_per_week)
+        weeks = np.arange(1, weeks_count + 1)
+        simulated_scores = np.clip(prediction + np.random.normal(1, 1, size=weeks_count).cumsum(), 0, 100)
 
-            # Preprocess the new input
-            processed_new_df = preprocess(new_df)
+        fig2, ax2 = plt.subplots()
+        ax2.plot(weeks, simulated_scores, marker='o', color='#1f77b4', linewidth=2)
+        for i, score in enumerate(simulated_scores):
+            ax2.text(weeks[i], score + 1, f"{score:.1f}%", ha='center', fontsize=10)
 
-            # Get the columns the model was trained on
-            training_columns = [col for col in df.columns if col != "Performance (%)" and col != "Practical Exercises"] # Adjust based on your actual training columns
+        ax2.set_title("📈 Simulated Weekly Performance")
+        ax2.set_xlabel("Week")
+        ax2.set_ylabel("Performance (%)")
+        ax2.set_ylim(0, 110)
+        ax2.grid(True)
 
-            # Make the prediction
-            predicted_score = predict_performance(loaded_model, processed_new_df, training_columns)
-            st.success(f"🎯 Predicted Performance: `{predicted_score:.2f}%`")
-        else:
-            st.error("⚠️ Pre-trained model not loaded. Cannot make prediction.")
+        st.pyplot(fig2)
+        st.markdown("### 📈 Simulated Weekly Performance")
+
+    except Exception as e:
+        st.error(f"❌ Prediction failed: {e}")
