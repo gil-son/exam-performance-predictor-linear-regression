@@ -129,7 +129,21 @@ if submitted and loaded_model:
 
     try:
         prediction = predict_performance(loaded_model, processed_new_df, training_columns)
+        capped_prediction = min(prediction, 100)  # Ensure valid percentage for charts
+
+        if prediction > 100:
+            prediction = 100
+
         st.success(f"🎯 Predicted Performance: `{prediction:.2f}%`")
+
+
+        # --- Conditional Advice ---
+        if prediction < 70:
+            st.warning("⚠️ **Attention!** Your predicted score is below 70%. Consider reviewing your study habits and preparation strategies.")
+        elif prediction < 72:
+            st.info("📘 **Almost there!** You're close to a good score. A few improvements could make a big difference!")
+        elif prediction >= 73:
+            st.success("🎉 **Great job!** Your preparation looks strong. Keep it up and trust your performance!")
 
         # Save cooldown time
         next_allowed = datetime.now() + timedelta(minutes=PREDICTION_COOLDOWN_MINUTES)
@@ -138,17 +152,19 @@ if submitted and loaded_model:
         # --- Donut Chart ---
         fig1, ax1 = plt.subplots()
         wedges, texts = ax1.pie(
-            [prediction, 100 - prediction],
-            labels=['Your Score', 'Remaining'],
+            [capped_prediction, 100 - capped_prediction],
+            labels=['Possible Score', 'Remaining'],
             colors=['#00c49a', '#e0e0e0'],
             startangle=90,
             counterclock=False,
             wedgeprops={'width': 0.3}
         )
+
         ax1.set(aspect="equal")
         ax1.text(0, 0, f"{prediction:.1f}%", ha='center', va='center', fontsize=24, fontweight='bold', color='#00c49a')
         st.markdown("### 🟢 Performance Overview")
         st.pyplot(fig1)
+
 
         # --- Simulated Weekly Performance ---
         weeks_count = max(1, tests_per_week)
