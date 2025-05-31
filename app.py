@@ -12,7 +12,7 @@ from human_verification import run_human_verification
 
 # --- Constants ---
 PREDICTION_BLOCK_FILE = "prediction_block_until.txt"
-PREDICTION_COOLDOWN_MINUTES = 10
+PREDICTION_COOLDOWN_MINUTES = 1
 
 # --- Load the pre-trained model ---
 try:
