@@ -55,7 +55,7 @@ The app will be accessible at: [http://localhost:8501](http://localhost:8501)
 ## Predict Your Score Online
 
   1. **Access the Link**
-    Open the provided link to get started.: http://172.31.81.153:8501
+    Open the provided link to get started.: http://172.31.81.153:8501 or http://34.237.245.45:8501
   
   2. **Solve a challenge to prove you are a human**  
      Solve the clock chanllenge to get form access.
