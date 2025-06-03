@@ -61,7 +61,8 @@ def _save_prediction_block_until(dt: datetime):
 # --- Style tweaks ---
 st.markdown("""
     <style>
-        p, label, div[data-baseweb="select"] div { font-size: 24px !important; }
+        p, label { font-size: 24px !important; }
+        div[data-baseweb="select"] div { font-size: 16px !important; }
     </style>
 """, unsafe_allow_html=True)
 
