@@ -12,7 +12,7 @@ from human_verification import run_human_verification
 
 # --- Constants ---
 PREDICTION_BLOCK_FILE = "prediction_block_until.txt"
-PREDICTION_COOLDOWN_MINUTES = 1
+PREDICTION_COOLDOWN_HOURS = 24  # Cooldown set to 1 day
 
 # --- Load the pre-trained model ---
 try:
@@ -81,8 +81,9 @@ now = datetime.now()
 block_until = _load_prediction_block_until()
 
 if block_until and now < block_until:
-    remaining = int((block_until - now).total_seconds())
-    st.warning(f"⏳ You’ve recently predicted. Please wait **{remaining} seconds** before trying again.")
+    remaining_hours = int((block_until - now).total_seconds() // 3600)
+    st.warning(f"⏳ You’ve recently predicted. Please wait **{remaining_hours} hours** before trying again.")
+
     st.stop()
 
 # --- Main App ---
@@ -130,13 +131,12 @@ if submitted and loaded_model:
 
     try:
         prediction = predict_performance(loaded_model, processed_new_df, training_columns)
-        capped_prediction = min(prediction, 100)  # Ensure valid percentage for charts
+        capped_prediction = min(prediction, 100)
 
         if prediction > 100:
             prediction = 100
 
         st.success(f"🎯 Predicted Performance: `{prediction:.2f}%`")
-
 
         # --- Conditional Advice ---
         if prediction < 70:
@@ -147,7 +147,7 @@ if submitted and loaded_model:
             st.success("🎉 **Great job!** Your preparation looks strong. Keep it up and trust your performance!")
 
         # Save cooldown time
-        next_allowed = datetime.now() + timedelta(minutes=PREDICTION_COOLDOWN_MINUTES)
+        next_allowed = datetime.now() + timedelta(hours=PREDICTION_COOLDOWN_HOURS)
         _save_prediction_block_until(next_allowed)
 
         # --- Donut Chart ---
@@ -165,7 +165,6 @@ if submitted and loaded_model:
         ax1.text(0, 0, f"{prediction:.1f}%", ha='center', va='center', fontsize=24, fontweight='bold', color='#00c49a')
         st.markdown("### 🟢 Performance Overview")
         st.pyplot(fig1)
-
 
         # --- Simulated Weekly Performance ---
         weeks_count = max(1, tests_per_week)
