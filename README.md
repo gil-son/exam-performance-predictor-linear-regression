@@ -54,29 +54,29 @@ The app will be accessible at: [http://localhost:8501](http://localhost:8501)
 
 ## Predict Your Score Online
 
-  1. **Solve a challenge to prove you are a human**  
+  1. Instructions and **Access the Link**
+   - This is the **Beta version**
+   - Available daily from 10 AM to 7 PM (UTC-3 / Brasília Time)
+   - You can test it **once per day**
+   - **Live App**: [Try it here](http://44.203.99.4:8501)
+
+  2. **Solve a challenge to prove you are a human**  
      Solve the clock chanllenge to get form access.
 
   <div align="center">
     <img src="https://i.ibb.co/PshyBqTR/p01.png" width="70%">
   </div>
 
-  2. **Provide Your Information**  
+  3. **Provide Your Information**  
      Enter your basic personal and study-related details, then click the **Predict Performance** button. A Linear Regression model will analyze your inputs to estimate your exam score.
 
   <div align="center">
     <img src="https://i.ibb.co/qMGJmGwj/p03.png" width="70%">
   </div>
 
-  3. **Get an Approximate Score**  
+  4. **Get an Approximate Score**  
      You'll receive a predicted performance percentage.
 
   <div align="center">
     <img src="https://i.ibb.co/kgxZFqXC/p04.png" width="70%">
-  </div>
-
-<hr/>
-
-  <div align="center">
-    <img src="https://i.ibb.co/kgNSnpv/git-support.png">
   </div>
