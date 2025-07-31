@@ -6,6 +6,26 @@
 
 This is a simple, interactive web app built using **Streamlit** and **Scikit-learn** that predicts a student's likely performance before an exam based on behavioral and preparation factors.
 
+But let’s take a moment to reflect on this project...
+
+Often, we follow a learning journey focused on mastering specific topics — and eventually take an exam to prove our skills.
+
+But it’s no secret that within what’s effective, there’s always something more efficient.
+
+A car can get you from one state to another, just like a plane can — but when it comes to efficiency, the plane wins.
+
+That’s exactly the idea behind this project: making the exam prep journey more efficient.
+How? By analyzing your study habits, sleep quality, routines, motivation, and more!
+
+This tool uses a machine learning model I trained — still in its early (and far from final) version 😅 — but it already provides useful insights for self-assessment.
+
+Key points:
+- You don’t need this model — it’s just an aid.
+- The result is a projection, not a definitive answer.
+- It helps identify areas to improve.
+- It's great for self-reflection.
+- It’s open source — contributions welcome!
+
 ---
 
 ## 📁 Files Needed
