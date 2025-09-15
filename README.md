@@ -78,7 +78,7 @@ The app will be accessible at: [http://localhost:8501](http://localhost:8501)
    - This is the **Beta version**
    - Available daily from 10 AM to 7 PM (UTC-3 / Brasília Time)
    - You can test it **once per day**
-   - **Live App**: [Try it here](http://35.175.151.115:8501/)
+   - **Live App**: [Try it here](http://52.90.136.51:8501/)
 
   2. **Solve a challenge to prove you are a human**  
      Solve the clock chanllenge to get form access.
