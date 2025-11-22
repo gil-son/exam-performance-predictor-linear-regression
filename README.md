@@ -84,19 +84,27 @@ The app will be accessible at: [http://localhost:8501](http://localhost:8501)
      Solve the clock chanllenge to get form access.
 
   <div align="center">
-    <img src="https://i.ibb.co/PshyBqTR/p01.png" width="70%">
+    <img src="https://github.com/gil-son/experimental/blob/main/matrizero/v001/src/assets/images/pj01.png" width="70%">
   </div>
 
   3. **Provide Your Information**  
      Enter your basic personal and study-related details, then click the **Predict Performance** button. A Linear Regression model will analyze your inputs to estimate your exam score.
 
   <div align="center">
-    <img src="https://i.ibb.co/qMGJmGwj/p03.png" width="70%">
+    <img src="https://github.com/gil-son/experimental/blob/main/matrizero/v001/src/assets/images/pj02.png" width="70%">
   </div>
-
+  <hr/>
+  <div align="center">
+    <img src="https://github.com/gil-son/experimental/blob/main/matrizero/v001/src/assets/images/pj03.png" width="70%">
+  </div>
+  
   4. **Get an Approximate Score**  
      You'll receive a predicted performance percentage.
 
   <div align="center">
-    <img src="https://i.ibb.co/kgxZFqXC/p04.png" width="70%">
+    <img src="https://github.com/gil-son/experimental/blob/main/matrizero/v001/src/assets/images/pj04.png" width="70%">
+  </div>
+  <hr/>
+  <div align="center">
+    <img src="https://github.com/gil-son/experimental/blob/main/matrizero/v001/src/assets/images/pj04_2.png" width="70%">
   </div>
