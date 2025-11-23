@@ -81,14 +81,14 @@ The app will be accessible at: [http://localhost:8501](http://localhost:8501)
    - **Live App**: [Try it here](http://52.90.136.51:8501/)
 
   2. **Solve a challenge to prove you are a human**  
-     Solve the clock chanllenge to get form access.
+     Solve the clock chanllenge to get form access:
 
   <div align="center">
     <img src="https://gitlab.com/gil-son/useful-images-collection/-/raw/main/png/exam-performance01.png?ref_type=heads" width="70%">
   </div>
 
   3. **Provide Your Information**  
-     Enter your basic personal and study-related details, then click the **Predict Performance** button. A Linear Regression model will analyze your inputs to estimate your exam score.
+     Enter your basic personal and study-related details, then click the **Predict Performance** button. A Linear Regression model will analyze your inputs to estimate your exam score:
 
   <div align="center">
     <img src="https://gitlab.com/gil-son/useful-images-collection/-/raw/main/png/exam-performance02.png?ref_type=heads" width="70%">
@@ -99,7 +99,7 @@ The app will be accessible at: [http://localhost:8501](http://localhost:8501)
   </div>
   
   4. **Get an Approximate Score**  
-     You'll receive a predicted performance percentage.
+     You'll receive a predicted performance percentage with a good advice:
 
   <div align="center">
     <img src="https://gitlab.com/gil-son/useful-images-collection/-/raw/main/png/exam-performance04.png?ref_type=heads" width="70%">
